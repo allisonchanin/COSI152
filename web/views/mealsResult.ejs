@@ -1,0 +1,12 @@
+<h1>Show Meals containing <%=ingredient %></h1>
+
+<% for(meal of meals){%> 
+    <h2><%=meal.strMeal %></h2>
+    <img 
+        width="200"
+        height="200"
+        src="<%=meal.strMealThumb %>" 
+        alt="<%=meal.strMeal %>">
+    <hr>
+<% } %>
+

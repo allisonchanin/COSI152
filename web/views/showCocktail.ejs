@@ -1,0 +1,14 @@
+<h1><%=cocktail %></h1>
+
+<% for(bev of drink){%> 
+    <h3><%=bev.strDrink %></h3>
+    <h5><%=bev.strInstructions %></h5>
+    <img 
+        width="200"
+        height="200"
+        src="<%=bev.strDrinkThumb %>" 
+        alt="<%=bev.strDrink %>">
+    <hr>
+<% } %>
+
+
