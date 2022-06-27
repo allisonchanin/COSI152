@@ -1,0 +1,9 @@
+<h1>TODO</h1>
+
+<% for(item of todoitems){%> 
+    <h3><%=item.desc %></h3>
+    <a href="todoToggle/<%=item.id %>"> <%=item.completed %></a>
+    <a href="/todoDelete/<%=item.id %>"> delete</a>
+<% } %> 
+
+

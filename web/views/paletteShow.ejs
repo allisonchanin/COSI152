@@ -1,0 +1,9 @@
+<h1>palette</h1>
+
+<% for(color of colors){%> 
+    <h3><%=color.name %></h3>
+    <a href="paletteToggle/<%=color.id %>"> <%=color.using %></a>
+    <a href="/paletteDelete/<%=color.id %>"> delete</a>
+<% } %> 
+
+

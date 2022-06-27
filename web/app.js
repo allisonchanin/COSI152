@@ -10,6 +10,17 @@ const session = require("express-session");
 const MongoDBStore = require('connect-mongodb-session')(session);
 
 // *********************************************************** //
+//  Loading JSON datasets
+// *********************************************************** //
+const courses = require('./public/data/courses20-21.json')
+
+// *********************************************************** //
+//  Loading models
+// *********************************************************** //
+
+const Course = require('./models/Course')
+
+// *********************************************************** //
 //  Connecting to the database
 // *********************************************************** //
 
@@ -94,6 +105,26 @@ app.post('/meals',
   }
 );
 
+app.get('/showIngredients',
+  async (req,res,next) => {
+    const response = await axios.get('https://www.themealdb.com/api/json/v1/1/list.php?i=list')
+    console.dir(response.data.length)
+    res.locals.ingredients = response.data.meals
+    res.render('showIngredients')
+  }
+);
+
+app.post('/showIngredients',
+  async (req,res,next) =>{
+    const {ingredient} = req.body;
+    res.locals.ingredient = ingredient;
+    const response = await axios.get('https://www.themealdb.com/api/json/v1/1/filter.php?i='+ ingredient +'')
+    console.dir(response.data);
+    res.locals.meals = response.data.meals;
+    res.render('mealsResult');
+  }
+);
+
 app.get('/practicestuff',
   (req,res,next) => {
     res.render('practicestuff')
@@ -119,6 +150,150 @@ app.post('/pattern',
     res.render('showCocktail');
   }
 );
+
+const ToDoItem = require('./models/ToDoItem');
+
+app.get('/todo',
+  (req,res,next) =>{
+    res.render('todo')
+  }
+)
+
+app.post('/todo',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const desc = req.body.desc;
+      const todoObj = {
+        userID:res.locals.user._id,
+        desc:desc,
+        completed:false,
+        createdAt:new Date(),
+      }
+      const todoItem = new ToDoItem(todoObj) // create ORM object for the item
+      await todoItem.save(); // stores in the database
+      res.redirect('/todoShow')
+
+    } catch(err){
+      next(err);
+    }
+  }
+);
+
+app.get('/todoShow',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const todoitems = await ToDoItem.find({userID:res.locals.user._id})
+      res.locals.todoitems = todoitems
+      res.render('todoShow')
+      //res.json(todoitems);
+    }catch(e){
+      next(e);
+    }
+  }
+);
+
+app.get('/todoDelete/:itemID',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const itemID = req.params.itemID;
+      await ToDoItem.deleteOne({_id:itemID});
+      res.redirect('/todoShow');
+    } catch (e){
+        next(e)
+    }
+  }
+)
+
+app.get('/todoToggle/:itemID',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const itemID = req.params.itemID;
+      const item = await ToDoItem.findOne({_id:itemID});
+      item.completed = !item.completed;
+      await item.save();
+      res.redirect('/todoShow');
+    } catch (e){
+        next(e)
+    }
+  }
+)
+
+//changing
+const Color = require('./models/Color');
+
+app.get('/palette',
+  (req,res,next) =>{
+    res.render('palette')
+  }
+)
+
+app.post('/palette',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const name = req.body.name;
+      const colorObj = {
+        userID:res.locals.user._id,
+        name:name,
+        using:false,
+      }
+      const color = new Color(colorObj) // create ORM object for the item
+      await color.save(); // stores in the database
+      res.redirect('/paletteShow')
+
+    } catch(err){
+      next(err);
+    }
+  }
+);
+
+app.get('/paletteShow',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const colors = await Color.find({userID:res.locals.user._id})
+      res.locals.colors = colors
+      res.render('paletteShow')
+      //res.json(todoitems);
+    }catch(e){
+      next(e);
+    }
+  }
+);
+
+app.get('/paletteDelete/:itemID',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const itemID = req.params.itemID;
+      await Color.deleteOne({_id:itemID});
+      res.redirect('/paletteShow');
+    } catch (e){
+        next(e)
+    }
+  }
+)
+
+app.get('/paletteToggle/:itemID',
+  isLoggedIn,
+  async (req,res,next) =>{
+    try {
+      const itemID = req.params.itemID;
+      const item = await Color.findOne({_id:itemID});
+      item.using = !item.using;
+      await item.save();
+      res.redirect('/paletteShow');
+    } catch (e){
+        next(e)
+    }
+  }
+)
+
+//until here
 
 app.get('/simpleform',
   isLoggedIn,
@@ -207,6 +382,59 @@ app.get('/showRepos/:githubID',
     res.render('showRepos')
   }
 );
+
+app.get('/uploadDB',
+  async (req,res,next) => {
+    await Course.deleteMany({});
+    await Course.insertMany(courses);
+
+    const num = await Course.find({}).count();
+    res.send("data uploaded: "+num)
+  }
+)
+
+// app.get('/bigCourses',
+//   async (req,res,next) => {
+//     try{
+//       const bigCourses =  await Course.find({enrolled:{$gt:150}})
+//                           //.select("subject coursenum name enrolled term")
+//                           //.sort({term:1,enrolled:-1})
+//                           //.limit(3)
+//                           ;
+//       res.json(bigCourses);
+//     }catch(e){
+//       next(e)
+//     }
+//   })
+
+app.get('/coursesBySubject',
+  (req,res,next) => {
+    res.render('coursesBySubject')
+})
+  
+
+
+app.post('/coursesBySubject',
+  async (req,res,next) => {
+    try{
+      const subject = req.body.subject;
+      const term = req.body.term;
+      const data = await Course.find({
+        subject:subject,
+        term:term, 
+        enrolled:{$gt:10}
+      })
+               .select("subject coursenum name enrolled term")
+               .sort({enrolled:-1})
+      //res.json(data); 
+      res.locals.courses = data;
+      res.render('coursesBySubjectShow');
+
+    }catch(e){
+      next(e)
+    }
+  }
+)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

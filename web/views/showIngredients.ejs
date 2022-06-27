@@ -1,0 +1,13 @@
+<h1>Exam 4 - CS152a </h1>
+
+<h2>Select A Main Ingredient</h2>
+
+<form method="post" action="/showIngredients">
+    <select name="ingredient">
+        <% for(ingredient of ingredients){%> 
+            <option><%=ingredient.strIngredient %></option>
+        <% } %>
+    </select>
+    <br>
+    <input type="submit">
+</form>
