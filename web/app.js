@@ -304,7 +304,6 @@ async (req,res,next) =>{
     const contacts = await Contact.find({userID:res.locals.user._id})
     res.locals.contacts = contacts
     res.render('exam5')
-    //res.json(todoitems);
   }catch(e){
     next(e);
   }
@@ -320,17 +319,16 @@ app.post('/exam5',
       const email = req.body.email;
       const phone = req.body.phone;
       const comment = req.body.comment;
-      const todoObj = {
+      const contactObj = {
         userID:res.locals.user._id,
         name:name,
         email:email,
         phone:phone,
         comment:comment
       }
-      const contactItem = new Contact(todoObj) // create ORM object for the item
+      const contactItem = new Contact(contactObj) // create ORM object for the item
       await contactItem.save(); // stores in the database
       res.redirect('/exam5')
-
     } catch(err){
       next(err);
     }
