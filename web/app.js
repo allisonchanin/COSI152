@@ -13,12 +13,15 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 //  Loading JSON datasets
 // *********************************************************** //
 const courses = require('./public/data/courses20-21.json')
+const colors = require('./public/data/DMC-colors.json')
+
 
 // *********************************************************** //
 //  Loading models
 // *********************************************************** //
 
 const Course = require('./models/Course')
+
 
 // *********************************************************** //
 //  Connecting to the database
@@ -430,6 +433,41 @@ app.post('/coursesBySubject',
       res.locals.courses = data;
       res.render('coursesBySubjectShow');
 
+    }catch(e){
+      next(e)
+    }
+  }
+)
+
+
+app.get('/uploadDBPalette',
+  async (req,res,next) => {
+    await Color.deleteMany({});
+    await Color.insertMany(colors);
+
+    const num = await Color.find({}).count();
+    res.send("data uploaded: "+num)
+  }
+)
+
+app.get('/paletteNew',
+  (req,res,next) => {
+    res.render('paletteNew')
+})
+  
+
+
+app.post('/paletteNew',
+  async (req,res,next) => {
+    try{
+      const colorCategory = req.body.colorCategory;
+      const data = await Color.find({
+        colorCategory:colorCategory,
+      })
+               .select("name numberID colorCategory strImage")
+      //res.json(data); 
+      res.locals.colors = data;
+      res.render('paletteNewShow');
     }catch(e){
       next(e)
     }

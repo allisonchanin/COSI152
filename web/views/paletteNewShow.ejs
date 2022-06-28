@@ -1,0 +1,24 @@
+<h1>Possible Colors</h1>
+
+<div style="overflow-y:auto;">
+    <table class="table table-bordered table-striped">
+      <thead>
+            <th>name</th>
+            <th>sample</th>
+        </thead>
+        <tbody>
+            <% for(color of colors){%> 
+            <tr> 
+                <td> <%= color.numberID %> <%= color.name %> </td> 
+                <td>
+                    <img 
+                    width="40"
+                    height="40"
+                    src="<%=color.strImage %>" 
+                    alt="<%=color.name %>"> 
+                </td> 
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
